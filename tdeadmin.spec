@@ -1,6 +1,6 @@
-#
-# Please submit bugfixes or comments via http://www.trinitydesktop.org/
-#
+%bcond clang 1
+%bcond lilo 0
+%bcond consolehelper 1
 
 # BUILD WARNING:
 #  Remove qt-devel and qt3-devel and any kde*-devel on your system !
@@ -11,6 +11,8 @@
 %if "%{?tde_version}" == ""
 %define tde_version 14.1.5
 %endif
+%define pkg_rel 2
+
 %define tde_pkg tdeadmin
 %define tde_prefix /opt/trinity
 %define tde_bindir %{tde_prefix}/bin
@@ -26,31 +28,27 @@
 %define tde_tdeincludedir %{tde_includedir}/tde
 %define tde_tdelibdir %{tde_libdir}/trinity
 
-%if 0%{?mdkversion}
 %undefine __brp_remove_la_files
 %define dont_remove_libtool_files 1
 %define _disable_rebuild_configure 1
-%endif
+
+# Avoids relinking, which breaks consolehelper
+%define dont_relink 1
 
 # fixes error: Empty %files file …/debugsourcefiles.list
 %define _debugsource_template %{nil}
 
 %define tarball_name %{tde_pkg}-trinity
-%global toolchain %(readlink /usr/bin/cc)
 
 
 Name:		trinity-%{tde_pkg}
 Summary:	Administrative tools for TDE
 Version:	%{tde_version}
-Release:	%{?!preversion:1}%{?preversion:0_%{preversion}}%{?dist}
+Release:	%{?!preversion:%{pkg_rel}}%{?preversion:0_%{preversion}}%{?dist}
 Group:		System/GUI/Other
 URL:		http://www.trinitydesktop.org/
 
-%if 0%{?suse_version}
-License:	GPL-2.0+
-%else
 License:	GPLv2+
-%endif
 
 #Vendor:		Trinity Project
 #Packager:	Francois Andriot <francois.andriot@free.fr>
@@ -65,7 +63,29 @@ Source5:		kpackagerc
 Source6:		ksysvrc
 Source7:		kuserrc
 
-BuildRequires:  cmake make
+BuildSystem:    cmake
+BuildOption:    -DCMAKE_BUILD_TYPE="RelWithDebInfo"
+BuildOption:    -DCMAKE_SKIP_RPATH=OFF
+BuildOption:    -DCMAKE_SKIP_INSTALL_RPATH=OFF
+BuildOption:    -DCMAKE_INSTALL_RPATH="%{tde_libdir}"
+BuildOption:    -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
+BuildOption:    -DCMAKE_INSTALL_PREFIX="%{tde_prefix}"
+BuildOption:    -DBIN_INSTALL_DIR="%{tde_bindir}"
+BuildOption:    -DDOC_INSTALL_DIR="%{tde_docdir}"
+BuildOption:    -DINCLUDE_INSTALL_DIR="%{tde_tdeincludedir}"
+BuildOption:    -DLIB_INSTALL_DIR="%{tde_libdir}"
+BuildOption:    -DPKGCONFIG_INSTALL_DIR="%{tde_libdir}/pkgconfig"
+BuildOption:    -DSYSCONF_INSTALL_DIR="%{_sysconfdir}/trinity"
+BuildOption:    -DSHARE_INSTALL_PREFIX="%{tde_datadir}"
+BuildOption:    -DBUILD_ALL=ON -DBUILD_DOC=ON -DBUILD_KCRON=ON 
+BuildOption:    -DBUILD_KDAT=ON -DBUILD_KNETWORKCONF=ON -DBUILD_KPACKAGE=ON
+BuildOption:    -DBUILD_KSYSV=ON -DBUILD_KUSER=ON -DBUILD_LILO_CONFIG=ON
+BuildOption:    -DBUILD_SECPOLICY=ON -DBUILD_TDEFILE_PLUGINS=ON 
+BuildOption:    -DKU_USERPRIVATEGROUP=false 
+BuildOption:    -DKU_HOMEDIR_PERM="0700"
+BuildOption:    -DKU_HOMETEMPLATE="/home/%U"
+BuildOption:    -DKU_MAILBOX_GID="0"
+BuildOption:    -DKU_MAILBOX_PERM="0660"
 
 Obsoletes:		trinity-kdeadmin < %{?epoch:%{epoch}:}%{version}-%{release}
 Provides:		trinity-kdeadmin = %{?epoch:%{epoch}:}%{version}-%{release}
@@ -76,19 +96,8 @@ BuildRequires:	trinity-tdelibs-devel >= %{tde_version}
 BuildRequires:	trinity-tde-cmake >= %{tde_version}
 BuildRequires:	libtool
 BuildRequires:	fdupes
-%if "%{?toolchain}" != "clang"
-BuildRequires:	gcc-c++
-%endif
 
-# SUSE desktop files utility
-%if 0%{?suse_version}
-BuildRequires:	update-desktop-files
-%endif
-
-%if 0%{?opensuse_bs} && 0%{?suse_version}
-# for xdg-menu script
-BuildRequires:	brp-check-trinity
-%endif
+%{!?with_clang:BuildRequires:	gcc-c++}
 
 # ACL support
 BuildRequires:  pkgconfig(libacl)
@@ -111,12 +120,7 @@ BuildRequires:  pkgconfig(ice)
 BuildRequires:  pkgconfig(sm)
 
 # LILO support
-%if 0%{?mgaversion} || 0%{?mdkversion} || 0%{?suse_version}
-#define with_lilo 1
-%endif
-%if 0%{?with_lilo}
-BuildRequires:	lilo
-%endif
+%{?with_lilo:BuildRequires:	lilo}
 
 Requires: trinity-kcron = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires: trinity-kdat = %{?epoch:%{epoch}:}%{version}-%{release}
@@ -125,18 +129,10 @@ Requires: trinity-knetworkconf = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires: trinity-kpackage = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires: trinity-ksysv = %{?epoch:%{epoch}:}%{version}-%{release}
 Requires: trinity-kuser = %{?epoch:%{epoch}:}%{version}-%{release}
-%if 0%{?with_lilo}
+%if %{with lilo}
 Requires: trinity-lilo-config = %{?epoch:%{epoch}:}%{version}-%{release}
 %else
 Obsoletes: trinity-lilo-config < %{?epoch:%{epoch}:}%{version}-%{release}
-%endif
-
-# CONSOLEHELPER (usermode) support
-%if 0%{?rhel} || 0%{?fedora} || 0%{?mgaversion} || 0%{?mdkversion}
-%define with_consolehelper 1
-
-# Avoids relinking, which breaks consolehelper
-%define dont_relink 1
 %endif
 
 %description
@@ -284,14 +280,9 @@ drag and drop GUI.
 Summary:	Trinity user/group administration tool
 Group:		System/GUI/Other
 
-%if 0%{?with_consolehelper}
+%if %{with consolehelper}
 # package 'usermode' provides '/usr/bin/consolehelper-gtk'
-%if 0%{?rhel} || 0%{?fedora}
-Requires:	usermode-gtk
-%endif
-%if 0%{?mgaversion} || 0%{?mdkversion}
 Requires:	usermode
-%endif
 %endif
 
 %description -n trinity-kuser
@@ -308,7 +299,7 @@ A user/group administration tool for TDE.
 %{tde_datadir}/icons/hicolor/*/apps/kuser.png
 %{tde_tdedocdir}/HTML/en/kuser/
 
-%if 0%{?with_consolehelper}
+%if %{with consolehelper}
 %{tde_sbindir}/kuser
 %{_sbindir}/kuser
 %config(noreplace) /etc/pam.d/kuser
@@ -317,7 +308,7 @@ A user/group administration tool for TDE.
 
 ##########
 
-%if 0%{?with_lilo}
+%if %{with lilo}
 %package -n trinity-lilo-config
 Summary:	Trinity frontend for lilo configuration
 Group:		System/GUI/Other
@@ -343,77 +334,13 @@ tdebase-bin since it uses the tdesu command to gain root privileges.
 touch /etc/lilo.conf
 %endif
 
-##########
 
-%if 0%{?suse_version} && 0%{?opensuse_bs} == 0
-%debug_package
-%endif
-
-##########
-
-%prep
-%autosetup -n %{tarball_name}-%{version}%{?preversion:~%{preversion}}
-
-
-%build
+%conf -p
 unset QTDIR QTLIB QTINC
 export PATH="%{tde_bindir}:${PATH}"
 
-if ! rpm -E %%cmake|grep -e 'cd build\|cd ${CMAKE_BUILD_DIR:-build}'; then
-  %__mkdir_p build
-  cd build
-fi
 
-%cmake \
-  -DCMAKE_BUILD_TYPE="RelWithDebInfo" \
-  -DCMAKE_C_FLAGS="${RPM_OPT_FLAGS}" \
-  -DCMAKE_CXX_FLAGS="${RPM_OPT_FLAGS}" \
-  -DCMAKE_SKIP_RPATH=OFF \
-  -DCMAKE_SKIP_INSTALL_RPATH=OFF \
-  -DCMAKE_INSTALL_RPATH="%{tde_libdir}" \
-  -DCMAKE_VERBOSE_MAKEFILE=ON \
-  -DWITH_GCC_VISIBILITY=OFF \
-  \
-  -DCMAKE_INSTALL_PREFIX="%{tde_prefix}" \
-  -DBIN_INSTALL_DIR="%{tde_bindir}" \
-  -DDOC_INSTALL_DIR="%{tde_docdir}" \
-  -DINCLUDE_INSTALL_DIR="%{tde_tdeincludedir}" \
-  -DLIB_INSTALL_DIR="%{tde_libdir}" \
-  -DPKGCONFIG_INSTALL_DIR="%{tde_libdir}/pkgconfig" \
-  -DSYSCONF_INSTALL_DIR="%{_sysconfdir}/trinity" \
-  -DSHARE_INSTALL_PREFIX="%{tde_datadir}" \
-  \
-  -DBUILD_ALL=ON \
-  -DBUILD_DOC=ON \
-  -DBUILD_KCRON=ON \
-  -DBUILD_KDAT=ON \
-  -DBUILD_KNETWORKCONF=ON \
-  -DBUILD_KPACKAGE=ON \
-  -DBUILD_KSYSV=ON \
-  -DBUILD_KUSER=ON \
-  -DBUILD_LILO_CONFIG=ON \
-  -DBUILD_SECPOLICY=ON \
-  -DBUILD_TDEFILE_PLUGINS=ON \
-  \
-%if 0%{?fedora} >= 16 || 0%{?suse_version} >= 1210 || 0%{?rhel} >= 7 || 0%{?mgaversion} >= 4
-  -DKU_FIRSTUID="1000" \
-  -DKU_FIRSTGID="1000" \
-%endif
-  -DKU_USERPRIVATEGROUP=false \
-  -DKU_HOMEDIR_PERM="0700" \
-  -DKU_HOMETEMPLATE="/home/%U" \
-  -DKU_MAILBOX_GID="0" \
-  -DKU_MAILBOX_PERM="0660" \
-  \
-  ..
-
-%__make %{?_smp_mflags} || %__make
-
-
-%install
-export PATH="%{tde_bindir}:${PATH}"
-%__make install DESTDIR=%{buildroot} -C build
-
+%install -a
 comps="kcron kdat knetworkconf kpackage ksysv kuser"
 %__mkdir_p	%{buildroot}%{tde_datadir}/config \
 			%{buildroot}%{_sysconfdir}/security/console.apps \
@@ -424,7 +351,7 @@ comps="kcron kdat knetworkconf kpackage ksysv kuser"
 %__mkdir_p "%{buildroot}%{tde_confdir}/"
 %__install -p -m644 %{SOURCE5} %{SOURCE6} %{SOURCE7} "%{buildroot}%{tde_confdir}/"
 
-%if 0%{?with_consolehelper}
+%if %{with consolehelper}
 # Run kuser through consolehelper
 %__install -p -m644 %{SOURCE1} %{buildroot}%{_sysconfdir}/security/console.apps/kuser
 %__install -p -m644 %{SOURCE2} %{buildroot}%{_sysconfdir}/pam.d/kuser
@@ -456,20 +383,11 @@ done
 %__rm -f %{?buildroot}%{tde_bindir}/secpolicy
 
 # Remove lilo related files, if unwanted.
-%if 0%{?with_lilo} == 0
+%if %{without lilo}
 %__rm -rf %{?buildroot}%{tde_tdedocdir}/HTML/en/lilo-config/
 %__rm -f %{?buildroot}%{tde_tdelibdir}/kcm_lilo.la
 %__rm -f %{?buildroot}%{tde_tdelibdir}/kcm_lilo.so
 %__rm -f %{?buildroot}%{tde_tdeappdir}/lilo.desktop
-%endif
-
-# Updates applications categories for openSUSE
-%if 0%{?suse_version}
-%suse_update_desktop_file kdat     System Backup
-%suse_update_desktop_file kpackage System PackageManager
-%suse_update_desktop_file kcron    System ServiceConfiguration
-%suse_update_desktop_file ksysv    System ServiceConfiguration
-%suse_update_desktop_file kuser    System SystemSetup
 %endif
 
 # Links duplicate files
