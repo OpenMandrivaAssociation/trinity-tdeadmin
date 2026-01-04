@@ -11,22 +11,10 @@
 %if "%{?tde_version}" == ""
 %define tde_version 14.1.5
 %endif
-%define pkg_rel 2
+%define pkg_rel 3
 
 %define tde_pkg tdeadmin
 %define tde_prefix /opt/trinity
-%define tde_bindir %{tde_prefix}/bin
-%define tde_confdir %{_sysconfdir}/trinity
-%define tde_sbindir %{tde_prefix}/sbin
-%define tde_datadir %{tde_prefix}/share
-%define tde_docdir %{tde_datadir}/doc
-%define tde_includedir %{tde_prefix}/include
-%define tde_libdir %{tde_prefix}/%{_lib}
-%define tde_sbindir %{tde_prefix}/sbin
-%define tde_tdeappdir %{tde_datadir}/applications/tde
-%define tde_tdedocdir %{tde_docdir}/tde
-%define tde_tdeincludedir %{tde_includedir}/tde
-%define tde_tdelibdir %{tde_libdir}/trinity
 
 %undefine __brp_remove_la_files
 %define dont_remove_libtool_files 1
@@ -50,11 +38,6 @@ URL:		http://www.trinitydesktop.org/
 
 License:	GPLv2+
 
-#Vendor:		Trinity Project
-#Packager:	Francois Andriot <francois.andriot@free.fr>
-
-Prefix:		%{tde_prefix}
-
 
 Source0:		https://mirror.ppa.trinitydesktop.org/trinity/releases/R%{tde_version}/main/core/%{tarball_name}-%{version}%{?preversion:~%{preversion}}.tar.xz
 Source1:		kuser.pam
@@ -64,19 +47,10 @@ Source6:		ksysvrc
 Source7:		kuserrc
 
 BuildSystem:    cmake
-BuildOption:    -DCMAKE_BUILD_TYPE="RelWithDebInfo"
-BuildOption:    -DCMAKE_SKIP_RPATH=OFF
-BuildOption:    -DCMAKE_SKIP_INSTALL_RPATH=OFF
-BuildOption:    -DCMAKE_INSTALL_RPATH="%{tde_libdir}"
-BuildOption:    -DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
-BuildOption:    -DCMAKE_INSTALL_PREFIX="%{tde_prefix}"
-BuildOption:    -DBIN_INSTALL_DIR="%{tde_bindir}"
-BuildOption:    -DDOC_INSTALL_DIR="%{tde_docdir}"
-BuildOption:    -DINCLUDE_INSTALL_DIR="%{tde_tdeincludedir}"
-BuildOption:    -DLIB_INSTALL_DIR="%{tde_libdir}"
-BuildOption:    -DPKGCONFIG_INSTALL_DIR="%{tde_libdir}/pkgconfig"
-BuildOption:    -DSYSCONF_INSTALL_DIR="%{_sysconfdir}/trinity"
-BuildOption:    -DSHARE_INSTALL_PREFIX="%{tde_datadir}"
+
+BuildOption:    -DCMAKE_INSTALL_PREFIX=%{tde_prefix}
+BuildOption:    -DINCLUDE_INSTALL_DIR=%{tde_prefix}/include/tde
+BuildOption:    -DPKGCONFIG_INSTALL_DIR=%{tde_prefix}/%{_lib}/pkgconfig
 BuildOption:    -DBUILD_ALL=ON -DBUILD_DOC=ON -DBUILD_KCRON=ON 
 BuildOption:    -DBUILD_KDAT=ON -DBUILD_KNETWORKCONF=ON -DBUILD_KPACKAGE=ON
 BuildOption:    -DBUILD_KSYSV=ON -DBUILD_KUSER=ON -DBUILD_LILO_CONFIG=ON
@@ -86,6 +60,7 @@ BuildOption:    -DKU_HOMEDIR_PERM="0700"
 BuildOption:    -DKU_HOMETEMPLATE="/home/%U"
 BuildOption:    -DKU_MAILBOX_GID="0"
 BuildOption:    -DKU_MAILBOX_PERM="0660"
+BuildOption:    -DWITH_GCC_VISIBILITY=%{!?with_clang:ON}%{?with_clang:OFF}
 
 Obsoletes:		trinity-kdeadmin < %{?epoch:%{epoch}:}%{version}-%{release}
 Provides:		trinity-kdeadmin = %{?epoch:%{epoch}:}%{version}-%{release}
@@ -155,11 +130,11 @@ It is a graphical user interface to cron, the UNIX system scheduler.
 
 %files -n trinity-kcron
 %defattr(-,root,root,-)
-%{tde_bindir}/kcron
-%{tde_tdeappdir}/kcron.desktop
-%{tde_datadir}/apps/kcron/
-%{tde_datadir}/icons/hicolor/*/apps/kcron.png
-%{tde_tdedocdir}/HTML/en/kcron/
+%{tde_prefix}/bin/kcron
+%{tde_prefix}/share/applications/tde/kcron.desktop
+%{tde_prefix}/share/apps/kcron/
+%{tde_prefix}/share/icons/hicolor/*/apps/kcron.png
+%{tde_prefix}/share/doc/tde/HTML/en/kcron/
 
 ##########
 
@@ -181,12 +156,12 @@ Main features are:
 %files -n trinity-kdat
 %defattr(-,root,root,-)
 %doc rpmdocs/kdat/*
-%{tde_bindir}/kdat
-%{tde_tdeappdir}/kdat.desktop
-%{tde_datadir}/apps/kdat/
-%{tde_datadir}/icons/hicolor/*/apps/kdat.png
-%{tde_datadir}/icons/locolor/*/apps/kdat.png
-%{tde_tdedocdir}/HTML/en/kdat/
+%{tde_prefix}/bin/kdat
+%{tde_prefix}/share/applications/tde/kdat.desktop
+%{tde_prefix}/share/apps/kdat/
+%{tde_prefix}/share/icons/hicolor/*/apps/kdat.png
+%{tde_prefix}/share/icons/locolor/*/apps/kdat.png
+%{tde_prefix}/share/doc/tde/HTML/en/kdat/
 
 ##########
 
@@ -200,12 +175,12 @@ package files.
 
 %files kfile-plugins
 %defattr(-,root,root,-)
-%{tde_tdelibdir}/tdefile_deb.la
-%{tde_tdelibdir}/tdefile_deb.so
-%{tde_tdelibdir}/tdefile_rpm.la
-%{tde_tdelibdir}/tdefile_rpm.so
-%{tde_datadir}/services/tdefile_deb.desktop
-%{tde_datadir}/services/tdefile_rpm.desktop
+%{tde_prefix}/%{_lib}/trinity/tdefile_deb.la
+%{tde_prefix}/%{_lib}/trinity/tdefile_deb.so
+%{tde_prefix}/%{_lib}/trinity/tdefile_rpm.la
+%{tde_prefix}/%{_lib}/trinity/tdefile_rpm.so
+%{tde_prefix}/share/services/tdefile_deb.desktop
+%{tde_prefix}/share/services/tdefile_rpm.desktop
 
 ##########
 
@@ -220,16 +195,16 @@ can be used to manage network devices and settings for each device.
 %files -n trinity-knetworkconf
 %defattr(-,root,root,-)
 %doc rpmdocs/knetworkconf/*
-%{tde_datadir}/icons/hicolor/*/apps/knetworkconf.png
-%{tde_datadir}/icons/hicolor/22x22/actions/network_disconnected_wlan.png
-%{tde_datadir}/icons/hicolor/22x22/actions/network_connected_lan_knc.png
-%{tde_datadir}/icons/hicolor/22x22/actions/network_disconnected_lan.png
-%{tde_datadir}/icons/hicolor/22x22/actions/network_traffic_wlan.png
-%{tde_datadir}/apps/knetworkconf/
-%{tde_tdeappdir}/kcm_knetworkconfmodule.desktop
-%{tde_tdelibdir}/kcm_knetworkconfmodule.so
-%{tde_tdelibdir}/kcm_knetworkconfmodule.la
-%{tde_tdedocdir}/HTML/en/knetworkconf/
+%{tde_prefix}/share/icons/hicolor/*/apps/knetworkconf.png
+%{tde_prefix}/share/icons/hicolor/22x22/actions/network_disconnected_wlan.png
+%{tde_prefix}/share/icons/hicolor/22x22/actions/network_connected_lan_knc.png
+%{tde_prefix}/share/icons/hicolor/22x22/actions/network_disconnected_lan.png
+%{tde_prefix}/share/icons/hicolor/22x22/actions/network_traffic_wlan.png
+%{tde_prefix}/share/apps/knetworkconf/
+%{tde_prefix}/share/applications/tde/kcm_knetworkconfmodule.desktop
+%{tde_prefix}/%{_lib}/trinity/kcm_knetworkconfmodule.so
+%{tde_prefix}/%{_lib}/trinity/kcm_knetworkconfmodule.la
+%{tde_prefix}/share/doc/tde/HTML/en/knetworkconf/
 
 ##########
 
@@ -245,12 +220,12 @@ install/remove them.
 %files -n trinity-kpackage
 %defattr(-,root,root,-)
 %doc rpmdocs/kpackage/*
-%{tde_bindir}/kpackage
-%{tde_tdeappdir}/kpackage.desktop
-%{tde_datadir}/apps/kpackage/
-%config(noreplace) %{tde_confdir}/kpackagerc
-%{tde_datadir}/icons/hicolor/*/apps/kpackage.png
-%{tde_tdedocdir}/HTML/en/kpackage/
+%{tde_prefix}/bin/kpackage
+%{tde_prefix}/share/applications/tde/kpackage.desktop
+%{tde_prefix}/share/apps/kpackage/
+%config(noreplace) %{_sysconfdir}/trinity/kpackagerc
+%{tde_prefix}/share/icons/hicolor/*/apps/kpackage.png
+%{tde_prefix}/share/doc/tde/HTML/en/kpackage/
 
 ##########
 
@@ -265,14 +240,14 @@ drag and drop GUI.
 %files -n trinity-ksysv
 %defattr(-,root,root,-)
 %doc rpmdocs/ksysv/*
-%{tde_bindir}/ksysv
-%{tde_tdeappdir}/ksysv.desktop
-%{tde_datadir}/apps/ksysv/
-%config(noreplace) %{tde_confdir}/ksysvrc
-%{tde_datadir}/icons/hicolor/*/apps/ksysv.png
-%{tde_datadir}/mimelnk/application/x-ksysv.desktop
-%{tde_datadir}/mimelnk/text/x-ksysv-log.desktop
-%{tde_tdedocdir}/HTML/en/ksysv/
+%{tde_prefix}/bin/ksysv
+%{tde_prefix}/share/applications/tde/ksysv.desktop
+%{tde_prefix}/share/apps/ksysv/
+%config(noreplace) %{_sysconfdir}/trinity/ksysvrc
+%{tde_prefix}/share/icons/hicolor/*/apps/ksysv.png
+%{tde_prefix}/share/mimelnk/application/x-ksysv.desktop
+%{tde_prefix}/share/mimelnk/text/x-ksysv-log.desktop
+%{tde_prefix}/share/doc/tde/HTML/en/ksysv/
 
 ##########
 
@@ -291,16 +266,16 @@ A user/group administration tool for TDE.
 %files -n trinity-kuser
 %defattr(-,root,root,-)
 %doc rpmdocs/kuser/*
-%{tde_bindir}/kuser
-%{tde_tdeappdir}/kuser.desktop
-%{tde_datadir}/apps/kuser/
-%config(noreplace) %{tde_confdir}/kuserrc
-%{tde_datadir}/config.kcfg/kuser.kcfg
-%{tde_datadir}/icons/hicolor/*/apps/kuser.png
-%{tde_tdedocdir}/HTML/en/kuser/
+%{tde_prefix}/bin/kuser
+%{tde_prefix}/share/applications/tde/kuser.desktop
+%{tde_prefix}/share/apps/kuser/
+%config(noreplace) %{_sysconfdir}/trinity/kuserrc
+%{tde_prefix}/share/config.kcfg/kuser.kcfg
+%{tde_prefix}/share/icons/hicolor/*/apps/kuser.png
+%{tde_prefix}/share/doc/tde/HTML/en/kuser/
 
 %if %{with consolehelper}
-%{tde_sbindir}/kuser
+%{tde_prefix}/sbin/kuser
 %{_sbindir}/kuser
 %config(noreplace) /etc/pam.d/kuser
 %config(noreplace) /etc/security/console.apps/kuser
@@ -325,10 +300,10 @@ tdebase-bin since it uses the tdesu command to gain root privileges.
 
 %files -n trinity-lilo-config
 %defattr(-,root,root,-)
-%{tde_tdelibdir}/kcm_lilo.la
-%{tde_tdelibdir}/kcm_lilo.so
-%{tde_tdeappdir}/lilo.desktop
-%{tde_tdedocdir}/HTML/en/lilo-config/
+%{tde_prefix}/%{_lib}/trinity/kcm_lilo.la
+%{tde_prefix}/%{_lib}/trinity/kcm_lilo.so
+%{tde_prefix}/share/applications/tde/lilo.desktop
+%{tde_prefix}/share/doc/tde/HTML/en/lilo-config/
 
 %post -n trinity-lilo-config
 touch /etc/lilo.conf
@@ -337,28 +312,28 @@ touch /etc/lilo.conf
 
 %conf -p
 unset QTDIR QTLIB QTINC
-export PATH="%{tde_bindir}:${PATH}"
+export PATH="%{tde_prefix}/bin:${PATH}"
 
 
 %install -a
 comps="kcron kdat knetworkconf kpackage ksysv kuser"
-%__mkdir_p	%{buildroot}%{tde_datadir}/config \
+%__mkdir_p	%{buildroot}%{tde_prefix}/share/config \
 			%{buildroot}%{_sysconfdir}/security/console.apps \
 			%{buildroot}%{_sysconfdir}/pam.d \
-			%{buildroot}%{tde_sbindir} \
+			%{buildroot}%{tde_prefix}/sbin \
 			%{buildroot}%{_sbindir}
 
-%__mkdir_p "%{buildroot}%{tde_confdir}/"
-%__install -p -m644 %{SOURCE5} %{SOURCE6} %{SOURCE7} "%{buildroot}%{tde_confdir}/"
+%__mkdir_p "%{buildroot}%{_sysconfdir}/trinity/"
+%__install -p -m644 %{SOURCE5} %{SOURCE6} %{SOURCE7} "%{buildroot}%{_sysconfdir}/trinity/"
 
 %if %{with consolehelper}
 # Run kuser through consolehelper
 %__install -p -m644 %{SOURCE1} %{buildroot}%{_sysconfdir}/security/console.apps/kuser
 %__install -p -m644 %{SOURCE2} %{buildroot}%{_sysconfdir}/pam.d/kuser
-%__mv %{buildroot}%{tde_bindir}/kuser %{buildroot}%{tde_sbindir}
-%__ln_s %{_bindir}/consolehelper %{buildroot}%{tde_bindir}/kuser
+%__mv %{buildroot}%{tde_prefix}/bin/kuser %{buildroot}%{tde_prefix}/sbin
+%__ln_s %{_bindir}/consolehelper %{buildroot}%{tde_prefix}/bin/kuser
 %if "%{tde_prefix}" != "/usr"
-%__ln_s %{tde_sbindir}/kuser %{?buildroot}%{_sbindir}/kuser
+%__ln_s %{tde_prefix}/sbin/kuser %{?buildroot}%{_sbindir}/kuser
 %endif
 %endif
 
@@ -374,22 +349,22 @@ done
 
 # - This file serves no purpose that we can see, and conflicts
 #   with GNOME system tools, so be sure to leave it out.
-%__rm -f %{?buildroot}%{tde_libdir}/pkgconfig/*.pc
+%__rm -f %{?buildroot}%{tde_prefix}/%{_lib}/pkgconfig/*.pc
 
 # Extract from changelog:
 # tdeadmin (4:3.5.5-2) unstable; urgency=low
 #  +++ Changes by Ana Beatriz Guerrero Lopez:
 #  * Removed useless program secpolicy. (Closes: #399426)
-%__rm -f %{?buildroot}%{tde_bindir}/secpolicy
+%__rm -f %{?buildroot}%{tde_prefix}/bin/secpolicy
 
 # Remove lilo related files, if unwanted.
 %if %{without lilo}
-%__rm -rf %{?buildroot}%{tde_tdedocdir}/HTML/en/lilo-config/
-%__rm -f %{?buildroot}%{tde_tdelibdir}/kcm_lilo.la
-%__rm -f %{?buildroot}%{tde_tdelibdir}/kcm_lilo.so
-%__rm -f %{?buildroot}%{tde_tdeappdir}/lilo.desktop
+%__rm -rf %{?buildroot}%{tde_prefix}/share/doc/tde/HTML/en/lilo-config/
+%__rm -f %{?buildroot}%{tde_prefix}/%{_lib}/trinity/kcm_lilo.la
+%__rm -f %{?buildroot}%{tde_prefix}/%{_lib}/trinity/kcm_lilo.so
+%__rm -f %{?buildroot}%{tde_prefix}/share/applications/tde/lilo.desktop
 %endif
 
 # Links duplicate files
-%fdupes "%{?buildroot}%{tde_datadir}"
+%fdupes "%{?buildroot}%{tde_prefix}/share"
 
