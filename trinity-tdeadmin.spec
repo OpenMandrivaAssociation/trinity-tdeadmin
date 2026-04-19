@@ -7,12 +7,6 @@
 #  Having KDE libraries may cause FTBFS here !
 
 # TDE variables
-%define tde_epoch 2
-%if "%{?tde_version}" == ""
-%define tde_version 14.1.5
-%endif
-%define pkg_rel 3
-
 %define tde_pkg tdeadmin
 %define tde_prefix /opt/trinity
 
@@ -31,15 +25,15 @@
 
 Name:		trinity-%{tde_pkg}
 Summary:	Administrative tools for TDE
-Version:	%{tde_version}
-Release:	%{?!preversion:%{pkg_rel}}%{?preversion:0_%{preversion}}%{?dist}
+Version:	14.1.5
+Release:	4
 Group:		System/GUI/Other
 URL:		http://www.trinitydesktop.org/
 
 License:	GPLv2+
 
 
-Source0:		https://mirror.ppa.trinitydesktop.org/trinity/releases/R%{tde_version}/main/core/%{tarball_name}-%{version}%{?preversion:~%{preversion}}.tar.xz
+Source0:		https://mirror.ppa.trinitydesktop.org/trinity/releases/R%{version}/main/core/%{tarball_name}-%{version}.tar.xz
 Source1:		kuser.pam
 Source2:		kuser.pamd
 Source5:		kpackagerc
@@ -62,13 +56,13 @@ BuildOption:    -DKU_MAILBOX_GID="0"
 BuildOption:    -DKU_MAILBOX_PERM="0660"
 BuildOption:    -DWITH_GCC_VISIBILITY=%{!?with_clang:ON}%{?with_clang:OFF}
 
-Obsoletes:		trinity-kdeadmin < %{?epoch:%{epoch}:}%{version}-%{release}
-Provides:		trinity-kdeadmin = %{?epoch:%{epoch}:}%{version}-%{release}
+Obsoletes:		trinity-kdeadmin < %{EVRD}
+Provides:		trinity-kdeadmin = %{EVRD}
 
-BuildRequires:	trinity-arts-devel >= %{tde_epoch}:1.5.10
-BuildRequires:	trinity-tdelibs-devel >= %{tde_version}
+BuildRequires:	trinity-arts-devel >= 1.5.10
+BuildRequires:	trinity-tdelibs-devel >= %{version}
 
-BuildRequires:	trinity-tde-cmake >= %{tde_version}
+BuildRequires:	trinity-tde-cmake >= %{version}
 BuildRequires:	libtool
 BuildRequires:	fdupes
 
@@ -97,17 +91,17 @@ BuildRequires:  pkgconfig(sm)
 # LILO support
 %{?with_lilo:BuildRequires:	lilo}
 
-Requires: trinity-kcron = %{?epoch:%{epoch}:}%{version}-%{release}
-Requires: trinity-kdat = %{?epoch:%{epoch}:}%{version}-%{release}
-Requires: %{name}-kfile-plugins = %{?epoch:%{epoch}:}%{version}-%{release}
-Requires: trinity-knetworkconf = %{?epoch:%{epoch}:}%{version}-%{release}
-Requires: trinity-kpackage = %{?epoch:%{epoch}:}%{version}-%{release}
-Requires: trinity-ksysv = %{?epoch:%{epoch}:}%{version}-%{release}
-Requires: trinity-kuser = %{?epoch:%{epoch}:}%{version}-%{release}
+Requires: trinity-kcron = %{EVRD}
+Requires: trinity-kdat = %{EVRD}
+Requires: %{name}-kfile-plugins = %{EVRD}
+Requires: trinity-knetworkconf = %{EVRD}
+Requires: trinity-kpackage = %{EVRD}
+Requires: trinity-ksysv = %{EVRD}
+Requires: trinity-kuser = %{EVRD}
 %if %{with lilo}
-Requires: trinity-lilo-config = %{?epoch:%{epoch}:}%{version}-%{release}
+Requires: trinity-lilo-config = %{EVRD}
 %else
-Obsoletes: trinity-lilo-config < %{?epoch:%{epoch}:}%{version}-%{release}
+Obsoletes: trinity-lilo-config < %{EVRD}
 %endif
 
 %description
