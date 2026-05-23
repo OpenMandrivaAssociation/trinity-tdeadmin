@@ -18,15 +18,15 @@
 %define dont_relink 1
 
 # fixes error: Empty %files file …/debugsourcefiles.list
-%define _debugsource_template %{nil}
+%undefine _debugsource_template
 
 %define tarball_name %{tde_pkg}-trinity
 
 
 Name:		trinity-%{tde_pkg}
 Summary:	Administrative tools for TDE
-Version:	14.1.5
-Release:	4
+Version:	14.1.6
+Release:	1
 Group:		System/GUI/Other
 URL:		http://www.trinitydesktop.org/
 
@@ -59,7 +59,7 @@ BuildOption:    -DWITH_GCC_VISIBILITY=%{!?with_clang:ON}%{?with_clang:OFF}
 Obsoletes:		trinity-kdeadmin < %{EVRD}
 Provides:		trinity-kdeadmin = %{EVRD}
 
-BuildRequires:	trinity-arts-devel >= 1.5.10
+BuildRequires:	trinity-arts-devel >= %{version}
 BuildRequires:	trinity-tdelibs-devel >= %{version}
 
 BuildRequires:	trinity-tde-cmake >= %{version}
